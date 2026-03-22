@@ -42,7 +42,9 @@
       "Bash(npm outdated:*)",
       "Bash(node --version:*)",
       "Bash(python3 --version:*)",
-      "Bash(python --version:*)"
+      "Bash(python --version:*)",
+      "Edit(/Users/nicholas/AI-Daily-Flash/*)",
+      "Write(/Users/nicholas/AI-Daily-Flash/*)"
     ]
   }
 }
