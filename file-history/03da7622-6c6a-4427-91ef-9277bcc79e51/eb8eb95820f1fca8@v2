@@ -1,0 +1,74 @@
+name: Generate AI Newsletter
+
+on:
+  schedule:
+    # 6 AM Eastern Standard Time (UTC-5) = 11:00 UTC
+    # Note: shifts to 7 AM Eastern during summer (EDT, UTC-4)
+    - cron: '0 11 * * *'
+
+  # Allow manual trigger from the GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      date_override:
+        description: 'Override date (YYYY-MM-DD). Leave blank for today.'
+        required: false
+        default: ''
+
+jobs:
+  generate:
+    name: Generate Newsletter
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: mainline
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate newsletter
+        timeout-minutes: 35
+        run: node scripts/generate-newsletter.js
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Commit and push newsletter
+        id: commit
+        timeout-minutes: 5
+        run: |
+          git config user.name "nfc-eng"
+          git config user.email "58239972+nfc-eng@users.noreply.github.com"
+
+          # Stage only the data directory
+          git add data/
+
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit (newsletter for today already exists)"
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+          else
+            TODAY=$(date -u +%Y-%m-%d)
+            git commit -m "Newsletter: ${TODAY}"
+            git push origin HEAD
+            echo "Newsletter committed and pushed for ${TODAY}"
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Vercel deploy
+        if: steps.commit.outputs.pushed == 'true'
+        timeout-minutes: 2
+        run: |
+          curl -s --max-time 60 -X POST "https://api.vercel.com/v1/integrations/deploy/prj_1hmwUaJ1XIKqaCIK8t3G7Dbh1lfS/dKLuRFPKSN"
+          echo "Vercel deploy hook triggered"

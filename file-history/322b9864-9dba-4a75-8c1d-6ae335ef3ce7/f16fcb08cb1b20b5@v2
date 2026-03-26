@@ -1,0 +1,26 @@
+
+# Setting PATH for Python 3.5
+# The original version is saved in .bash_profile.pysave
+PATH="/Library/Frameworks/Python.framework/Versions/3.5/bin:${PATH}"
+export PATH
+
+# Setting PATH for Python 3.5
+# The original version is saved in .bash_profile.pysave
+PATH="/Library/Frameworks/Python.framework/Versions/3.5/bin:${PATH}"
+export PATH
+alias savant='meteor --settings ../../Dropbox/savant/config.json'
+alias mysql="/usr/local/mysql/bin/mysql -u root -p"
+alias facebook="/usr/bin/open -a '/Applications/Google Chrome.app' 'https://www.facebook.com/'"
+alias github="/usr/bin/open -a '/Applications/Google Chrome.app' 'https://github.com/'"
+alias localhost="/usr/bin/open -a '/Applications/Google Chrome.app' 'http://localhost:3000/'"
+alias appenv='source ~/appandtaps/bin/activate'
+export CATALINA_HOME=/Users/nicholas/Desktop/pers-proj/jersey-starterkit/apache-tomcat-9.0.0.M26
+export PATH="$HOME/.local/bin:$PATH"
+
+# added by Anaconda3 installer
+export PATH="/Users/nicholas/anaconda3/bin:$PATH"
+
+# Setting PATH for Python 3.9
+# The original version is saved in .bash_profile.pysave
+PATH="/Library/Frameworks/Python.framework/Versions/3.9/bin:${PATH}"
+export PATH

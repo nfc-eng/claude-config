@@ -1,0 +1,321 @@
+/**
+ * AI Daily Flash — Podcast Generator
+ *
+ * 1. Reads today's newsletter JSON
+ * 2. Uses Claude to write a natural podcast script with a deep dive
+ * 3. Sends script to ElevenLabs TTS → MP3
+ * 4. Uploads MP3 to Vercel Blob
+ * 5. Patches audioUrl back into the newsletter JSON
+ *
+ * Run: node scripts/generate-podcast.js
+ * Env: ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, BLOB_READ_WRITE_TOKEN
+ */
+
+'use strict';
+
+const Anthropic = require('@anthropic-ai/sdk');
+const fs = require('fs');
+const path = require('path');
+
+// ──────────────────────────────────────────────────────────────
+// Config
+// ──────────────────────────────────────────────────────────────
+
+// ElevenLabs voice ID — "Will" (calm, authoritative, natural for tech content)
+// Change this to your preferred voice ID from elevenlabs.io/voice-library
+const ELEVENLABS_VOICE_ID = 'bIHbv24MWmeRgasZH58o';
+const ELEVENLABS_MODEL = 'eleven_turbo_v2_5'; // Best quality/speed balance
+
+// ──────────────────────────────────────────────────────────────
+// Article Fetching
+// ──────────────────────────────────────────────────────────────
+
+const PAYWALLED_DOMAINS = [
+  'wsj.com', 'nytimes.com', 'ft.com', 'technologyreview.com',
+  'wired.com', 'bloomberg.com', 'economist.com', 'nature.com',
+  'science.org', 'ieee.org', 'newscientist.com',
+];
+
+function isPaywalled(url) {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    return PAYWALLED_DOMAINS.some((d) => hostname === d || hostname.endsWith('.' + d));
+  } catch {
+    return false;
+  }
+}
+
+function normalizeUrl(url) {
+  // Convert arXiv PDF links to abstract pages (readable HTML)
+  return url.replace(/arxiv\.org\/pdf\//, 'arxiv.org/abs/').replace(/\.pdf($|\?)/, '$1');
+}
+
+function extractText(html) {
+  return html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
+    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '')
+    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
+    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function fetchArticle(url) {
+  if (isPaywalled(url)) return null;
+
+  const fetchUrl = normalizeUrl(url);
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(fetchUrl, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AI-Daily-Flash/1.0)' },
+    });
+    clearTimeout(timer);
+
+    if (!response.ok) return null;
+
+    const html = await response.text();
+    const text = extractText(html);
+    const words = text.split(/\s+/);
+
+    // Too short = paywall or error page
+    if (words.length < 200) return null;
+
+    // Cap at ~3,000 words to stay within reasonable token limits
+    return words.slice(0, 3000).join(' ');
+  } catch {
+    return null;
+  }
+}
+
+// Pick the best deep-dive candidate and fetch its full article.
+// Returns { story, fullContent } — fullContent may be null if fetch fails.
+async function pickAndFetchDeepDive(client, stories) {
+  console.log('  Selecting deep dive story...');
+
+  const storyList = stories
+    .map((s, i) => `[${i}] ${s.headline} (${s.source})`)
+    .join('\n');
+
+  const msg = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 16,
+    messages: [{
+      role: 'user',
+      content: `Given these AI news stories, reply with ONLY the index number (0-based) of the single most technically significant or genuinely surprising one for a podcast deep dive:\n\n${storyList}`,
+    }],
+  });
+
+  const index = parseInt(msg.content[0].text.trim(), 10);
+  const story = stories[Number.isNaN(index) ? 0 : Math.min(index, stories.length - 1)];
+
+  console.log(`  Deep dive: "${story.headline}"`);
+  console.log(`  Fetching full article from ${story.url}...`);
+
+  const fullContent = await fetchArticle(story.url);
+  if (fullContent) {
+    console.log(`  ✓ Fetched ${fullContent.split(/\s+/).length} words`);
+  } else {
+    console.log('  ! Full article unavailable — falling back to summary');
+  }
+
+  return { story, fullContent };
+}
+
+// ──────────────────────────────────────────────────────────────
+// Script Generation
+// ──────────────────────────────────────────────────────────────
+
+async function generateScript(client, newsletter) {
+  const allStories = newsletter.sections.flatMap((s) => s.stories);
+
+  // Pick deep dive story and attempt full article fetch
+  const { story: deepDiveStory, fullContent } = await pickAndFetchDeepDive(client, allStories);
+
+  const storiesText = allStories
+    .map((story, i) => `[${i + 1}] ${story.headline}\n    ${story.summary}\n    Source: ${story.source}`)
+    .join('\n\n');
+
+  const deepDiveSection = fullContent
+    ? `DEEP DIVE STORY — full article content available:\n\nHeadline: ${deepDiveStory.headline}\nSource: ${deepDiveStory.source}\n\nFull article:\n${fullContent}`
+    : `DEEP DIVE STORY — summary only (full article unavailable):\n\nHeadline: ${deepDiveStory.headline}\nSource: ${deepDiveStory.source}\nSummary: ${deepDiveStory.summary}`;
+
+  const prompt = `You are writing a podcast script for "AI Daily Flash" — a daily ~10 minute audio briefing for software engineers and AI practitioners.
+
+The host is smart, direct, and slightly opinionated — like a knowledgeable colleague who has already read everything. The tone is conversational but substantive. Not hype-y, not corporate. Think "senior engineer explaining something interesting over coffee."
+
+Today's newsletter content:
+
+Title: ${newsletter.title}
+Editor's Note: ${newsletter.editorsNote}
+
+All stories (for headlines section):
+${storiesText}
+
+${deepDiveSection}
+
+Write a complete podcast script with this exact structure:
+
+1. COLD OPEN (10-15 seconds): One punchy sentence that teases the deep dive topic above. Drop the listener in immediately. No "welcome to the show" yet.
+
+2. INTRO (20-30 seconds): Brief welcome. "I'm your host, welcome to AI Daily Flash." One sentence on what's in store today.
+
+3. HEADLINES (bulk of the episode): Cover each story conversationally. For each one:
+   - State what happened in plain language
+   - Say why it matters to someone building with AI
+   - Keep each story to 30-60 seconds of speech
+   - Use natural transitions between stories ("Meanwhile...", "On the research side...", "Shifting gears...", "Worth knowing...")
+   - Do NOT just read the summary verbatim — rewrite it for the ear
+
+4. DEEP DIVE (2-3 minutes): Use the deep dive story identified above. If full article content was provided, use it — cite specific details, quotes, numbers, or findings from the actual article. Go deeper than the headline: explain context, why it's a bigger deal than it seems, what builders should do differently because of it. This is the segment that makes the podcast worth listening to.
+
+5. OUTRO (15-20 seconds): "That's AI Daily Flash for [day of week]. See you tomorrow." Keep it short.
+
+CRITICAL RULES:
+- Write entirely for the ear. No bullet points, no markdown, no headers in the output.
+- Use natural spoken language. Contractions, incomplete sentences where natural, occasional "look" or "here's the thing" are fine.
+- Never say "As I mentioned" or "As we discussed" — this is a monologue.
+- Aim for ~1,400-1,600 words total (roughly 10 minutes at natural speaking pace).
+- Output ONLY the script text. No stage directions, no [PAUSE] notes, no formatting. Just words to be spoken.`;
+
+  console.log('  Generating podcast script with Claude...');
+  const message = await client.messages.create({
+    model: 'claude-opus-4-6',
+    max_tokens: 2048,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  return message.content[0].text.trim();
+}
+
+// ──────────────────────────────────────────────────────────────
+// ElevenLabs TTS
+// ──────────────────────────────────────────────────────────────
+
+async function generateAudio(script) {
+  console.log('  Sending script to ElevenLabs TTS...');
+
+  const response = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
+    {
+      method: 'POST',
+      headers: {
+        'xi-api-key': process.env.ELEVENLABS_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: script,
+        model_id: ELEVENLABS_MODEL,
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          style: 0.3,
+          use_speaker_boost: true,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`ElevenLabs API error ${response.status}: ${error}`);
+  }
+
+  const buffer = await response.arrayBuffer();
+  return Buffer.from(buffer);
+}
+
+// ──────────────────────────────────────────────────────────────
+// Vercel Blob Upload
+// ──────────────────────────────────────────────────────────────
+
+async function uploadToBlob(audioBuffer, date) {
+  console.log('  Uploading MP3 to Vercel Blob...');
+
+  const { put } = require('@vercel/blob');
+  const filename = `podcasts/${date}.mp3`;
+
+  const blob = await put(filename, audioBuffer, {
+    access: 'public',
+    contentType: 'audio/mpeg',
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  });
+
+  return blob.url;
+}
+
+// ──────────────────────────────────────────────────────────────
+// Main
+// ──────────────────────────────────────────────────────────────
+
+async function main() {
+  const requiredEnv = ['ANTHROPIC_API_KEY', 'ELEVENLABS_API_KEY', 'BLOB_READ_WRITE_TOKEN'];
+  const missing = requiredEnv.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+
+  const client = new Anthropic.default();
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+
+  console.log(`\n🎙️  AI Daily Flash Podcast Generator — ${today}`);
+  console.log('━'.repeat(50));
+
+  // ── 1. Load today's newsletter ──────────────────────────────
+  const newsletterPath = path.join(__dirname, '..', 'data', 'newsletters', `${today}.json`);
+  if (!fs.existsSync(newsletterPath)) {
+    throw new Error(`No newsletter found for ${today} at ${newsletterPath}. Run generate-newsletter.js first.`);
+  }
+
+  const newsletter = JSON.parse(fs.readFileSync(newsletterPath, 'utf-8'));
+
+  if (newsletter.audioUrl) {
+    console.log(`\n✓ Podcast already exists for ${today}: ${newsletter.audioUrl}`);
+    console.log('  Delete audioUrl from the JSON to regenerate.');
+    return;
+  }
+
+  const storyCount = newsletter.sections.reduce((sum, s) => sum + s.stories.length, 0);
+  console.log(`\n  Loaded newsletter: ${storyCount} stories across ${newsletter.sections.length} sections`);
+
+  // ── 2. Generate script ──────────────────────────────────────
+  console.log('\n📝 Step 1: Generate podcast script');
+  const script = await generateScript(client, newsletter);
+
+  // Save script for review
+  const scriptsDir = path.join(__dirname, '..', 'data', 'scripts');
+  fs.mkdirSync(scriptsDir, { recursive: true });
+  const scriptPath = path.join(scriptsDir, `${today}.txt`);
+  fs.writeFileSync(scriptPath, script, 'utf-8');
+  console.log(`  ✓ Script saved: data/scripts/${today}.txt (${script.length} chars, ~${Math.round(script.split(' ').length / 150)} min)`);
+
+  // ── 3. Generate audio ───────────────────────────────────────
+  console.log('\n🔊 Step 2: Convert to audio via ElevenLabs');
+  const audioBuffer = await generateAudio(script);
+  console.log(`  ✓ Audio generated: ${(audioBuffer.length / 1024 / 1024).toFixed(1)} MB`);
+
+  // ── 4. Upload to Vercel Blob ────────────────────────────────
+  console.log('\n☁️  Step 3: Upload to Vercel Blob');
+  const audioUrl = await uploadToBlob(audioBuffer, today);
+  console.log(`  ✓ Uploaded: ${audioUrl}`);
+
+  // ── 5. Patch newsletter JSON ────────────────────────────────
+  newsletter.audioUrl = audioUrl;
+  fs.writeFileSync(newsletterPath, JSON.stringify(newsletter, null, 2), 'utf-8');
+  console.log(`\n✅ Newsletter JSON updated with audioUrl`);
+  console.log(`   URL: ${audioUrl}`);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('\n❌ Podcast generation failed:', err.message);
+    process.exit(1);
+  });

@@ -1,0 +1,15 @@
+# Auto-managed plugin marketplace files
+plugins/marketplaces/
+
+# Cache
+cache/
+
+# Local/secret settings
+settings.local.json
+*.env
+.env*
+
+# Credentials and tokens
+*token*
+*secret*
+*credential*

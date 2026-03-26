@@ -1,0 +1,122 @@
+# Nicholas Clement
+
+Senior Software Engineer & Cloud Architect with expertise in distributed systems, cloud-native application development, and AI-augmented engineering.
+
+📍 Denver, CO · 📞 <phone number> · ✉️ <email> · [LinkedIn](https://www.linkedin.com/in/nicholas-clement-2b3606114/)
+🔒 Top Secret Clearance (TS/SCI with FSP): Jan 2023 - Current
+
+---
+
+## Summary
+
+Senior software engineer with 7+ years designing and deploying cloud-native services and distributed systems at AWS scale. Architected and launched a new internal AWS service as single-threaded owner — delivering two quarters of estimated engineering effort in a single quarter using AI-augmented development practices. Led teams of up to 13 engineers to deliver production microservices at the "General Availability" launch bar, AWS's highest deployment standard. Built high-throughput data pipelines handling 150TB daily across 50+ sites, and deployed ML inference systems at re:Invent. Experienced in distributed systems design, REST API architecture, DynamoDB data modeling, and cross-functional technical leadership. Proven track record growing engineering teams and mentoring junior engineers to deliver four-nines availability services.
+
+---
+
+## Skills
+
+**Languages:** Python · Kotlin · Java · TypeScript / JavaScript
+
+**AWS:** Lambda · ECS/Fargate · API Gateway · DynamoDB · SageMaker · S3 · CloudWatch · CDK · Step Functions · CloudFormation · Amplify · SSM
+
+**Practices:** REST API Design · Distributed Systems · Microservices · Docker · CI/CD · System Design · Application Security · Technical Leadership · AI-Augmented Development
+
+---
+
+## Experience
+
+### AWS Data Center Systems — Sr. SDE
+**April 2024 - Present · Denver, CO**
+
+#### On-Demand Device Polling API (2025-2026)
+- Designed, built, and launched a new internal AWS service as single-threaded owner, enabling controls engineers to poll infrastructure devices on-demand via a secure API without direct server access. Architected end-to-end: API Gateway (SigV4) → ECS → SSM RunCommand → polling service, with async job completion via S3 event-driven Lambda and Step Functions timeout workflows.
+- Delivered approximately two quarters of estimated engineering effort in a single quarter using AI-assisted development. Shipped 58+ code reviews in January 2026 alone with a 1.2 average revision rate.
+- Led AppSec security review achieving single-pass threat model approval. Implemented site-level throttling, cross-account IAM permissions across 25+ accounts, API Gateway resource policies, and encrypted pagination tokens.
+- Shipped 20+ integration tests covering DNS ingress, SigV4 authentication, rate limiting, and multi-device polling. Published API model and TypeScript client, unblocking partner team integration.
+
+#### AI Oncall Automation & Org Adoption (2025-2026)
+- Built an AI agent that ingests runbooks and accelerates incident triage — triaged 170+ tickets, reducing on-call burden across the team. On a severity-2 alarm, the agent identified a campus-wide network outage within minutes, correlating 4 related tickets and eliminating false escalations.
+- Drove cross-organizational AI adoption: 6+ teams now building AI skill packages for on-call and software development. Created wiki, organized recurring Lunch & Learns (15+ attendees), and authored org-wide AI tenets document.
+- Featured 2x in monthly efficiency report sent to L8 leadership. AI tooling adopted by 4 teams with 4+ developers contributing organically.
+
+#### Air-Gapped Telemetry Pipeline
+- Led end-to-end deployment of a telemetry data pipeline across 25 air-gapped, classified data centers in North America — first-of-its-kind data flow for the environment. Drove technical alignment on secure data egress architecture using diode solutions, data transformation pipelines, and regional deployment strategy for downstream cloud services.
+- Coordinated delivery across infrastructure, controls, networking, and operations teams over a 10-month timeline. Established RACI model and ownership strategy for cross-org collaboration.
+- Resolved critical production blockers through hands-on troubleshooting: fixed async-IO threading conflicts in polling software, optimized connection management with thread-local clients, and implemented multi-threaded publishing logic.
+- Led AppSec security review achieving single-pass approval and authorization to deploy on a network where the organization had never previously operated.
+
+#### High-Throughput Data Pipeline (Project Phasor)
+- Led technical design and implementation of a high-resolution data collection and cloud processing pipeline as technical lead for a three-engineer team, delivering $6MM in annual operational savings. Achieved 3,000Hz sampling rate from hardware sensors through cloud data pipeline.
+- Designed scalable cloud architecture to handle 150TB daily throughput for planned expansion to 50+ AI/ML sites. Conducted extensive load testing — 17 trials across 13 software versions, processing 17GB across 6,000 files in 30 minutes, validating production-scale performance.
+- Pioneered team's first Docker containerized on-premise deployment with minimal resource footprint (<10% CPU, <25% memory). Authored high-level design document achieving senior leadership sign-off.
+- Drove 12-month production rollout from single-site prototype to 12-site deployment. Presented business impact and architecture to 450-person organization at company all-hands, gaining VP-level visibility within the 100,000-person AWS Infrastructure organization.
+
+#### AWS Application Security Guardian
+- Served as AppSec Guardian across two organizations: AWS Supply Chain (250+ engineers) and AWS Data Center Systems (450+ engineers). Supported 30+ products and services through security certification. Led 13 AppSec reviews in 2025, mentoring on every review — resulting in 4 SDEs becoming active Guardians.
+- Mentored 10+ engineers through the shadow program, growing Guardian cohort by 25%. Created incident response wiki, security consult guide, and weekly office hours mechanism.
+
+#### CloudWatch Dashboard Framework
+- Built reusable monitoring dashboard framework using CDK and CloudWatch to track operational health of distributed telemetry systems across hundreds of sites. Framework adopted by 10+ engineers across 6+ teams, becoming a critical tool for weekly leadership reviews.
+
+---
+
+### AWS Supply Chain — SDE II
+**August 2022 - April 2024 · Denver, CO**
+
+#### N-Tier Collaboration Routing Service
+- Led a team of 13 engineers to architect and deliver a backend REST API enabling secure file exchange between AWS Supply Chain customers and their trading partners. Authored high-level system design including service architecture, code structure, and CI/CD pipeline strategy, then delegated 14 low-level design artifacts across 4 engineers.
+- Delivered 14 API endpoints and 35,000 lines of production code across 5 CI/CD pipelines in a 4-month timeline. Achieved "General Availability" launch bar, AWS's highest deployment standard.
+
+#### Supply Chain Product Location Service
+- Architected and delivered a backend REST API for managing product locations within customer fulfillment facilities. Led high-level design and delegated to 5 engineers, coordinating a team of 10 developers on an aggressive 5-month timeline.
+- Partnered with product team to reduce requirements by 65% (15 user stories → 5 MVP features) while maintaining customer value. Designed DynamoDB single-table schema with adjacency-matrix pattern to support complex location hierarchies.
+
+#### EDI ML Auto Association
+- Designed and deployed a backend REST API integrating an ML model for automated mapping of customer EDI messages using NLP. Led 6 developers to deliver a production ML inference system using AWS SageMaker, launching at re:Invent within an aggressive 2-month timeline.
+
+---
+
+### AWS Data Center Systems — SDE II
+**July 2020 - August 2022 · Denver, CO**
+
+#### Hardware Provisioning System
+- Architected and led implementation of a global hardware provisioning system as single-threaded owner and technical lead. Designed RESTful API with 30+ endpoints and DynamoDB single-table schema using adjacency-matrix pattern to scale to millions of devices across hundreds of sites.
+- Led a team of 5 engineers to deliver 20,000 lines of Python code, pioneering Step Functions integration for asynchronous provisioning workflows with real-time metrics extraction. System has provisioned 1,000+ devices and served 6+ million API requests annually with 99.6%+ availability across all production regions.
+
+---
+
+### AWS Data Center Systems — SDE I
+**September 2018 - July 2020 · Denver, CO**
+
+#### Document Security Audit Service
+- Designed and developed an automated security audit service scanning tens of thousands of user accounts and millions of documents daily for security vulnerabilities. Reduced document bloat by 12TB, saving $1MM+ annually in storage costs while detecting and mitigating hundreds of security risks.
+- Operated for 6 years with only 1 incident before successfully deprecating — authored comprehensive deprecation guide for future reference.
+
+#### Firewall Log Monitoring
+- Designed and developed a centralized log monitoring service analyzing log messages from thousands of firewalls globally in near real-time. Detected and alarmed on hundreds of security events including malformed firewall rules and configuration errors.
+
+---
+
+## Personal Projects
+
+**Happy Hour Finder** · *2019 - Present*
+- Built a serverless web app to crowdsource happy hours by location. Stack: AWS Lambda + API Gateway, DynamoDB with Uber H3 geohashing for geographic search, React frontend deployed via AWS Amplify, Google Maps autocomplete integration.
+
+**Map-based Art Generator** · [mapart-website-s3-dev-us-west-2-263839118990.s3-website-us-west-2.amazonaws.com](http://mapart-website-s3-dev-us-west-2-263839118990.s3-website-us-west-2.amazonaws.com/) · *2022-2023*
+- Built a serverless image generation service using a Python map library containerized in Docker on AWS Lambda (up to 10GB memory). Images stored in S3 with historical browsing. Required modifying the underlying open-source library to run in a Lambda container environment.
+
+---
+
+## Education
+
+**University of Colorado Boulder** — Bachelor of Science, Computer Science
+August 2014 - May 2018
+*CU Boulder Esteemed Scholar — merit award offered to a select group of incoming Colorado resident students*
+
+---
+
+## Hiring & Mentorship
+
+- Conducted 10+ interviews annually (phone screens and on-sites) to support organizational hiring
+- Mentored 4+ official mentees across levels and organizations, with multiple successful promotions (SDE I → SDE II)
+- Authored promotion documents for direct reports and cross-team engineers

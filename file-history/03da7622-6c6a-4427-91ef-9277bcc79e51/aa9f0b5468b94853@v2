@@ -1,0 +1,38 @@
+// Client-safe: no fs, no Node.js-only imports.
+// Import from here in client components instead of newsletter.ts.
+
+export interface Story {
+  headline: string;
+  summary: string;
+  source: string;
+  url: string;
+  category: string;
+}
+
+export interface Section {
+  title: string;
+  stories: Story[];
+}
+
+export interface Newsletter {
+  date: string;
+  generatedAt: string;
+  title: string;
+  subtitle: string;
+  editorsNote: string;
+  sections: Section[];
+  audioUrl?: string;
+}
+
+export const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
+  Models:        { bg: 'bg-cyan-500/10',    text: 'text-cyan-400' },
+  APIs:          { bg: 'bg-violet-500/10',  text: 'text-violet-400' },
+  Tools:         { bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
+  Research:      { bg: 'bg-amber-500/10',   text: 'text-amber-400' },
+  Industry:      { bg: 'bg-rose-500/10',    text: 'text-rose-400' },
+  'Open Source': { bg: 'bg-teal-500/10',    text: 'text-teal-400' },
+  Startups:      { bg: 'bg-orange-500/10',  text: 'text-orange-400' },
+  Community:     { bg: 'bg-indigo-500/10',  text: 'text-indigo-400' },
+  Agents:        { bg: 'bg-purple-500/10',  text: 'text-purple-400' },
+  Evals:         { bg: 'bg-yellow-500/10',  text: 'text-yellow-300' },
+};

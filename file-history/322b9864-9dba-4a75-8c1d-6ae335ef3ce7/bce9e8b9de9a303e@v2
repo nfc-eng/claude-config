@@ -1,0 +1,343 @@
+{
+  "picture": {
+    "hidden": true,
+    "url": "http://nicholasclement.com/selfie.JPG",
+    "size": 64,
+    "rotation": 0,
+    "aspectRatio": 1,
+    "borderRadius": 0,
+    "borderColor": "rgba(0, 0, 0, 0)",
+    "borderWidth": 0,
+    "shadowColor": "rgba(0, 0, 0, 0.5)",
+    "shadowWidth": 0
+  },
+  "basics": {
+    "name": "Nicholas Clement",
+    "headline": "Staff Software Engineer specializing in backend systems, zero-to-one product delivery, and AI-augmented engineering.",
+    "email": "nicholasclement21@gmail.com",
+    "phone": "719-357-1731",
+    "location": "Denver, CO",
+    "website": {
+      "url": "https://www.linkedin.com/in/nfc-eng/",
+      "label": "LinkedIn"
+    },
+    "customFields": []
+  },
+  "summary": {
+    "title": "Summary",
+    "columns": 1,
+    "hidden": false,
+    "content": "<p>Backend engineer and technical leader with 7+ years building cloud-native services at hyperscale. Track record of launching zero-to-one products as single-threaded owner, from design through production, while leading cross-functional teams and staying close to what customers actually need. Delivered two quarters of estimated engineering effort in a single quarter using AI-assisted development. Experienced in REST API design, distributed systems, DynamoDB data modeling, and collaborating with Product, Design, and Data partners to cut scope to the right MVP and ship fast. Passionate about what AI tooling does to engineering velocity and product quality.</p>"
+  },
+  "sections": {
+    "profiles": {
+      "title": "Profiles",
+      "columns": 1,
+      "hidden": true,
+      "items": [
+        {
+          "id": "vv64zsooa06b33ljsc70q02s",
+          "hidden": false,
+          "icon": "linkedin",
+          "network": "LinkedIn",
+          "username": "nfc-eng",
+          "website": {
+            "url": "https://www.linkedin.com/in/nfc-eng/",
+            "label": ""
+          }
+        }
+      ]
+    },
+    "experience": {
+      "title": "Experience",
+      "columns": 1,
+      "hidden": false,
+      "items": [
+        {
+          "id": "lime_exp_1",
+          "hidden": false,
+          "company": "Amazon Web Services",
+          "position": "Senior Software Development Engineer",
+          "location": "Denver, CO",
+          "period": "April 2024 - Present",
+          "website": { "url": "", "label": "" },
+          "description": "<p><strong>Zero-to-One Internal Service Launch</strong></p><ul><li><p>Designed, built, and launched a new internal AWS service from scratch as single-threaded owner, enabling controls engineers to interact with infrastructure devices via a secure on-demand API. Architected end-to-end: API Gateway (SigV4) → ECS → SSM RunCommand → polling service, with async job completion via S3 event-driven Lambda and Step Functions workflows. Shipped 20+ integration tests and a TypeScript client, unblocking a partner team integration.</p></li><li><p>Delivered two quarters of estimated engineering effort in a single quarter using AI-assisted development. Shipped 58+ code reviews in January 2026 alone with a 1.2 average revision rate, demonstrating a systematic approach to using AI tooling to accelerate delivery without sacrificing quality.</p></li></ul><p><strong>AI-Augmented Engineering and Org Adoption</strong></p><ul><li><p>Built an AI agent that ingests runbooks and accelerates incident triage, processing 170+ tickets and reducing on-call burden across the team. On a severity-2 incident, the agent correlated 4 related tickets and identified root cause within minutes, eliminating a false escalation.</p></li><li><p>Drove AI tooling adoption across 6+ teams: created a shared wiki, ran recurring Lunch and Learns with 15+ attendees, and authored org-wide AI tenets. Featured twice in efficiency reports sent to senior leadership. Four teams now building AI skill packages organically.</p></li></ul><p><strong>Data Instrumentation and Operational Dashboards</strong></p><ul><li><p>Built a reusable CloudWatch dashboard framework using CDK to instrument and monitor distributed systems health across hundreds of sites. Adopted by 10+ engineers across 6+ teams, becoming a critical tool for data-driven operational decision making and leadership reviews.</p></li></ul><p><strong>Leadership and Mentorship</strong></p><ul><li><p>Conducted 10+ interviews annually. Mentored 4+ official mentees across levels and organizations with multiple successful promotions. Served as AppSec Guardian across two organizations totaling 700+ engineers, shepherding 30+ products through security certification and growing the Guardian cohort by 25% through a structured shadow program.</p></li></ul>",
+          "roles": []
+        },
+        {
+          "id": "lime_exp_2",
+          "hidden": false,
+          "company": "Amazon Web Services — Supply Chain",
+          "position": "Software Development Engineer II",
+          "location": "Denver, CO",
+          "period": "August 2022 - April 2024",
+          "website": { "url": "", "label": "" },
+          "description": "<p><strong>N-Tier Collaboration Routing Service</strong></p><ul><li><p>Led a team of 13 engineers to architect and deliver a zero-to-one backend REST API enabling secure file exchange between AWS Supply Chain customers and their trading partners. Created high-level system design and delegated 14 low-level design artifacts across 4 engineers. Delivered 14 API endpoints and 35,000 lines of production code across 5 CI/CD pipelines in a 4-month timeline, achieving the General Availability launch bar, AWS's highest deployment standard.</p></li></ul><p><strong>Supply Chain Product Location Service</strong></p><ul><li><p>Architected and delivered a zero-to-one backend REST API for managing product locations within customer fulfillment facilities. Collaborated closely with the product team to reduce scope by 65%, from 15 user stories to 5 core MVP features, while maintaining customer value. Led a team of 10 developers to deliver on an aggressive 5-month timeline. Designed DynamoDB single-table schema with adjacency-matrix pattern for complex location hierarchies.</p></li></ul><p><strong>EDI ML Auto Association</strong></p><ul><li><p>Designed and deployed a backend REST API integrating a machine learning model for automated mapping of customer EDI messages using NLP. Led 6 developers to ship a production ML inference system using AWS SageMaker, launching at re:Invent within a 2-month timeline.</p></li></ul>",
+          "roles": []
+        },
+        {
+          "id": "lime_exp_3",
+          "hidden": false,
+          "company": "Amazon Web Services — Data Center Systems",
+          "position": "Software Development Engineer II",
+          "location": "Denver, CO",
+          "period": "July 2020 - August 2022",
+          "website": { "url": "", "label": "" },
+          "description": "<p><strong>Hardware Provisioning System</strong></p><ul><li><p>Architected and led implementation of a global hardware provisioning system as single-threaded owner and technical lead. Designed RESTful API with 30+ endpoints and DynamoDB single-table schema to scale to millions of devices across hundreds of sites. Led a team of 5 engineers to deliver 20,000 lines of Python code with Step Functions for async provisioning workflows. System has served 6+ million API requests annually at 99.6%+ availability across all production regions.</p></li></ul>",
+          "roles": []
+        },
+        {
+          "id": "lime_exp_4",
+          "hidden": false,
+          "company": "Amazon Web Services — Data Center Systems",
+          "position": "Software Development Engineer I",
+          "location": "Denver, CO",
+          "period": "September 2018 - July 2020",
+          "website": { "url": "", "label": "" },
+          "description": "<p><strong>Document Security Audit Service</strong></p><ul><li><p>Designed and developed an automated security audit service scanning tens of thousands of user accounts and millions of documents daily for security vulnerabilities. Reduced document bloat by 12TB, saving $1MM+ annually in storage costs. Operated for 6 years with a single incident before successfully deprecating.</p></li></ul><p><strong>Firewall Centralized Log Monitoring</strong></p><ul><li><p>Designed and developed a centralized log monitoring service analyzing log messages from thousands of firewalls globally in near real-time. Detected and alarmed on hundreds of security events including malformed rules and configuration errors.</p></li></ul>",
+          "roles": []
+        }
+      ]
+    },
+    "education": {
+      "title": "Education",
+      "columns": 1,
+      "hidden": false,
+      "items": [
+        {
+          "id": "x71vzkzlt9oocubfpoyt5t59",
+          "hidden": false,
+          "school": "University of Colorado Boulder",
+          "degree": "Bachelor of Science",
+          "area": "Computer Science",
+          "grade": "",
+          "location": "",
+          "period": "August 2014 - May 2018",
+          "website": { "url": "", "label": "" },
+          "description": "<p>Relevant Coursework: Algorithms, Data Structures, Operating Systems, Distributed Systems, Data Science, Software Development Methods and Tools</p>"
+        }
+      ]
+    },
+    "projects": {
+      "title": "Personal Projects",
+      "columns": 1,
+      "hidden": false,
+      "items": [
+        {
+          "id": "lime_proj_1",
+          "hidden": false,
+          "name": "AI Daily Flash",
+          "period": "2025 - Present",
+          "website": {
+            "url": "https://ai-daily-flash-clenicho.vercel.app/",
+            "label": "ai-daily-flash-clenicho.vercel.app"
+          },
+          "description": "<p>Built a personal AI news digest that aggregates content from 100+ AI thought leaders, researchers, and company blogs, runs them through Claude Opus (Anthropic) daily, and surfaces the most impactful takeaways. Vibe-coded over a weekend and deployed on Vercel.</p>"
+        },
+        {
+          "id": "lime_proj_2",
+          "hidden": false,
+          "name": "Happy Hour Finder",
+          "period": "2019 - Present",
+          "website": { "url": "", "label": "" },
+          "description": "<p>Built a consumer web app to crowdsource the best happy hours by location. Stack: AWS Lambda and API Gateway (serverless), DynamoDB with Uber H3 geohashing for geographic search, React frontend deployed via AWS Amplify, Google Maps autocomplete.</p>"
+        },
+        {
+          "id": "lime_proj_3",
+          "hidden": false,
+          "name": "Map-based Art Generator",
+          "period": "2022 - 2023",
+          "website": {
+            "url": "http://mapart-website-s3-dev-us-west-2-263839118990.s3-website-us-west-2.amazonaws.com/",
+            "label": "Map Art Generator"
+          },
+          "description": "<p>Built a serverless image generation service using a Python map library containerized in Docker on AWS Lambda (up to 10GB memory). Modified the underlying open-source library to run in a Lambda container environment. Images stored in S3 with historical browsing.</p>"
+        }
+      ]
+    },
+    "skills": {
+      "title": "Skills",
+      "columns": 4,
+      "hidden": false,
+      "items": [
+        {
+          "id": "lime_skill_1",
+          "hidden": false,
+          "icon": "",
+          "name": "Python",
+          "proficiency": "",
+          "level": 0,
+          "keywords": ["REST APIs", "Lambda", "PyTest", "Docker"]
+        },
+        {
+          "id": "lime_skill_2",
+          "hidden": false,
+          "icon": "",
+          "name": "Kotlin",
+          "proficiency": "",
+          "level": 0,
+          "keywords": ["JVM", "Coroutines", "Gradle", "Microservices"]
+        },
+        {
+          "id": "lime_skill_3",
+          "hidden": false,
+          "icon": "",
+          "name": "Java",
+          "proficiency": "",
+          "level": 0,
+          "keywords": ["Spring", "Dependency Injection", "OOP", "Lombok"]
+        },
+        {
+          "id": "lime_skill_4",
+          "hidden": false,
+          "icon": "",
+          "name": "TypeScript / JS",
+          "proficiency": "",
+          "level": 0,
+          "keywords": ["React", "Node.js", "CDK", "Infrastructure-as-Code"]
+        },
+        {
+          "id": "lime_skill_5",
+          "hidden": false,
+          "icon": "",
+          "name": "AWS",
+          "proficiency": "",
+          "level": 0,
+          "keywords": ["Lambda", "ECS/Fargate", "API Gateway", "DynamoDB", "SageMaker", "CDK", "Step Functions", "CloudWatch", "Amplify"]
+        },
+        {
+          "id": "lime_skill_6",
+          "hidden": false,
+          "icon": "",
+          "name": "Engineering",
+          "proficiency": "",
+          "level": 0,
+          "keywords": ["Distributed Systems", "REST API Design", "Microservices", "CI/CD", "System Design", "AppSec", "AI-Augmented Dev"]
+        }
+      ]
+    },
+    "languages": {
+      "title": "Languages",
+      "columns": 1,
+      "hidden": true,
+      "items": []
+    },
+    "interests": {
+      "title": "Interests",
+      "columns": 1,
+      "hidden": true,
+      "items": []
+    },
+    "awards": {
+      "title": "Awards",
+      "columns": 1,
+      "hidden": false,
+      "items": [
+        {
+          "id": "zf1jge9oc6hf8qo41q4xz718",
+          "hidden": false,
+          "title": "CU Boulder Esteemed Scholar",
+          "awarder": "University of Colorado Boulder",
+          "date": "August 2014",
+          "website": {
+            "url": "https://www.colorado.edu/scholarships/esteemed-scholars",
+            "label": ""
+          },
+          "description": "<p>Merit award offered to a select group of incoming Colorado resident students based on academic achievement.</p>"
+        }
+      ]
+    },
+    "certifications": {
+      "title": "Certifications",
+      "columns": 1,
+      "hidden": false,
+      "items": []
+    },
+    "publications": {
+      "title": "Publications",
+      "columns": 1,
+      "hidden": true,
+      "items": []
+    },
+    "volunteer": {
+      "title": "Volunteering",
+      "columns": 1,
+      "hidden": true,
+      "items": []
+    },
+    "references": {
+      "title": "References",
+      "columns": 1,
+      "hidden": true,
+      "items": []
+    }
+  },
+  "customSections": [],
+  "metadata": {
+    "template": "onyx",
+    "layout": {
+      "sidebarWidth": 35,
+      "pages": [
+        {
+          "fullWidth": false,
+          "main": [
+            "summary",
+            "profiles",
+            "experience",
+            "education",
+            "projects",
+            "volunteer",
+            "references"
+          ],
+          "sidebar": [
+            "skills",
+            "interests",
+            "certifications",
+            "awards",
+            "publications",
+            "languages"
+          ]
+        }
+      ]
+    },
+    "css": {
+      "enabled": false,
+      "value": "* {\n\toutline: 1px solid #000;\n\toutline-offset: 4px;\n}"
+    },
+    "page": {
+      "gapX": 4,
+      "gapY": 6,
+      "marginX": 18,
+      "marginY": 18,
+      "format": "a4",
+      "locale": "en-US",
+      "hideIcons": false
+    },
+    "design": {
+      "level": {
+        "icon": "star",
+        "type": "circle"
+      },
+      "colors": {
+        "primary": "rgba(37, 99, 235, 1)",
+        "text": "rgba(0, 0, 0, 1)",
+        "background": "rgba(255, 255, 255, 1)"
+      }
+    },
+    "typography": {
+      "body": {
+        "fontFamily": "IBM Plex Serif",
+        "fontWeights": ["400", "400", "600"],
+        "fontSize": 10.5,
+        "lineHeight": 1.5
+      },
+      "heading": {
+        "fontFamily": "IBM Plex Serif",
+        "fontWeights": ["600"],
+        "fontSize": 13.5,
+        "lineHeight": 1.5
+      }
+    },
+    "notes": ""
+  }
+}

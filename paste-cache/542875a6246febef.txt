@@ -1,0 +1,90 @@
+All Jobs
+Staff Software Engineer, New Verticals
+Location
+United States
+
+Employment Type
+Full time
+
+Location Type
+Remote
+
+Department
+Engineering
+
+Compensation
+$190K – $261K • Offers Equity • Offers Bonus
+Overview
+Application
+Lime is the largest global shared micromobility business, operating in close to 30 countries across five continents. We’re on a mission to build a future where transportation is shared, affordable and carbon-free. Our electric bikes and scooters have powered more than one billion rides in cities around the world. Named a 2025 Time 100 Most Influential Company, Lime continues to set the pace for shared micromobility globally, spurring a new generation of clean alternatives to car ownership.
+
+
+
+Are you an experienced Backend or Web fullstack software engineer who has delighted customers with software at scale? Can you balance shipping what's needed to learn from customers with laying the foundations for growth when we find success?
+
+We have established the New Verticals team to bring our fleet of electric vehicles to more people. We are exploring new solutions and will be learning through iteration with real customers. You'll ship zero-to-one products and help shape the future of Lime.
+
+As a Staff Backend Engineer you'll be driving the core commerce operations that power our new experiences. You'll work with another Staff Backend Engineer, mobile engineers, as well as Product Management, Design, and Data representatives to deliver new products and the infrastructure needed to manage them. New Verticals is a peer to teams owning our primary riding product and you'll work with them to ship solutions that lean into Lime's capabilities.
+
+This is a remote position with a requirement for candidates residing in the United States to maintain effective collaboration across teams.
+
+What You'll Do:
+
+Deliver software to enable new customer initiatives and own the balance between time to launch, ability to pivot, and ability to scale. Seek and utilize knowledge of the Lime engineering ecosystem to find the right solution, or design what's needed.
+
+Learn from our customers by shipping software and understanding the market environment.
+
+Collaborate with coworkers in Product, Design, Data, and Operations. Ensure solutions interoperate well with Lime's full stack of services. The team’s work will span cloud-based backend services, web-based tools, mobile clients, and third-party applications.
+
+Mentor individuals at Lime and participate in learning, growth, and improvement activities.
+
+Participate in the shaping of Lime's Engineering culture.
+
+About You:
+
+7+ years of industry professional software development experience, and a track record of building impactful products or systems.
+
+Team focus: you recognize your team is the source of your success and invest in them. That includes cross-functional collaborators in Product, Design, Data, and Operations.
+
+Owner's mindset: you're focused on outcomes and can solve problems to get there.
+
+Data driven: You instrument your work for decision making, you can reason through data to learn from our customers.
+
+Excellent communication skills and effective management of competing priorities.
+
+Preferred Experience:
+
+Experience shipping Ruby on Rails backend and/or React-based web frontend applications.
+
+Brings a learning mindset to the use of software development tools including AI.
+
+You’re enthusiastic about Lime's mission and micromobility; you want to see cities transform to becoming people-centric and less polluted
+
+U.S. Based Position - What We Offer:
+
+Comprehensive Health & Wellness: A choice of medical, dental, and vision plans, with Lime covering 100% of the employee-only premium for many plans. We also provide company-paid life and disability insurance and company-funded mental health benefits.
+
+Financial & Retirement Planning: 401(k) plan with both pre-tax and Roth options, and access to a Health Savings Account (HSA) with a monthly company contribution.
+
+Family & Fertility Support: Paid parental leave for birthing and non-birthing parents, plus fertility and family-forming benefits.
+
+Time Off & Flexibility: Flexible vacation policy for exempt employees, paid sick time, and a calendar of paid company holidays.
+
+Unique Lime Perks: Complimentary use of Lime vehicles in participating cities, a monthly phone allowance, dedicated learning and development days, and access to perks including One Medical, Wellhub, and Headspace.
+
+The salary range listed reflects what Lime reasonably expects to offer for this role, with the final base salary determined by factors such as the candidate’s location and relevant skills and experience. Depending on the position, the total compensation package may also include discretionary annual performance bonus opportunities and equity, subject to applicable plan terms and eligibility requirements.
+
+Lime considers all qualified applicants for employment, including those with arrest or conviction records, in accordance with the San Francisco Fair Chance Ordinance, the Los Angeles Fair Chance Initiative for Hiring, the Los Angeles County Fair Chance Ordinance, the California Fair Chance Act, and all other applicable federal, state, and local laws.
+
+#LI-SE1
+
+#LI-Remote
+
+If you want to make an impact, Lime is the place for you. Not sure if you meet all the qualifications? If this role excites you we encourage you to apply. Explore all opportunities on our career page.
+
+Lime is proud to be an Equal Opportunity Employer. We believe different perspectives help us grow and achieve more. That’s why we’re dedicated to building and developing a team that reflects a wider range of backgrounds, abilities, identities, and experiences. If you require a reasonable accommodation during the application or hiring process, please email recruiting-operations@li.me for assistance.
+
+Apply for this Job
+This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.
+
+Powered by 

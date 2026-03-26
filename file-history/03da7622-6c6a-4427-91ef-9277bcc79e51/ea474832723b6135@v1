@@ -1,0 +1,672 @@
+/**
+ * AI Daily Flash — Newsletter Generator
+ *
+ * Fetches AI/tech news from RSS feeds, curates with Claude,
+ * and saves a structured JSON newsletter to data/newsletters/.
+ *
+ * Run: node scripts/generate-newsletter.js
+ * Env: ANTHROPIC_API_KEY
+ */
+
+'use strict';
+
+const Anthropic = require('@anthropic-ai/sdk');
+const Parser = require('rss-parser');
+const fs = require('fs');
+const path = require('path');
+
+// ──────────────────────────────────────────────────────────────
+// Config
+// ──────────────────────────────────────────────────────────────
+
+// Practitioner voices — blogs, Substacks, personal sites, and GitHub activity
+// from people actively building and thinking in AI.
+// These are weighted higher in the prompt.
+const PRACTITIONER_FEEDS = [
+  // ── Karpathy ──────────────────────────────────────────────────
+  {
+    name: 'Andrej Karpathy',
+    url: 'https://karpathy.substack.com/feed',
+  },
+  {
+    name: 'Andrej Karpathy (GitHub)',
+    url: 'https://github.com/karpathy.atom',
+  },
+  // ── Simon Willison ────────────────────────────────────────────
+  {
+    // Prolific AI practitioner — LLM tools, commentary, experiments
+    name: 'Simon Willison',
+    url: 'https://simonwillison.net/atom/everything/',
+  },
+  {
+    name: 'Simon Willison (GitHub)',
+    url: 'https://github.com/simonw.atom',
+  },
+  // ── ML Research & Education ───────────────────────────────────
+  {
+    // ML research breakdowns, practical insights on new papers
+    name: 'Sebastian Raschka',
+    url: 'https://magazine.sebastianraschka.com/feed',
+  },
+  {
+    // ML systems, AI engineering, production ML
+    name: 'Chip Huyen',
+    url: 'https://huyenchip.com/feed.xml',
+  },
+  {
+    // Deep technical posts from OpenAI research
+    name: 'Lilian Weng',
+    url: 'https://lilianweng.github.io/index.xml',
+  },
+  {
+    // ML visualizations — moved to Substack (Language Models & Co.)
+    name: 'Jay Alammar',
+    url: 'https://newsletter.languagemodels.co/feed',
+  },
+  {
+    // Post-training, RLHF, open models — senior researcher at Ai2
+    name: 'Nathan Lambert (Interconnects)',
+    url: 'https://www.interconnects.ai/feed',
+  },
+  {
+    // François Chollet — Keras creator, ARC benchmark, AI reasoning
+    name: 'François Chollet',
+    url: 'https://fchollet.substack.com/feed',
+  },
+  // ── Applied ML & LLM Engineering ──────────────────────────────
+  {
+    // Applied ML, LLM evals, recommender systems — Amazon
+    name: 'Eugene Yan',
+    url: 'https://eugeneyan.com/rss/',
+  },
+  {
+    // LLM evals, production AI products — Parlance Labs (deep technical posts)
+    name: 'Hamel Husain',
+    url: 'https://hamel.dev/index.xml',
+  },
+  {
+    // AI engineering, Software 3.0 — Latent Space newsletter
+    name: 'swyx / Latent Space',
+    url: 'https://www.latent.space/feed',
+  },
+  {
+    // ML practitioner — embeddings, recsys, honest takes on AI hype
+    name: 'Vicki Boykis',
+    url: 'https://vickiboykis.com/index.xml',
+  },
+  // ── Distinguished Engineers ────────────────────────────────────
+  {
+    // Marc Brooker — AWS VP/Distinguished Engineer, distributed systems, databases
+    name: 'Marc Brooker',
+    url: 'http://brooker.co.za/blog/rss.xml',
+  },
+  {
+    name: 'Marc Brooker (GitHub)',
+    url: 'https://github.com/marcbrooker.atom',
+  },
+  {
+    // Werner Vogels — Amazon CTO, distributed systems, cloud architecture
+    name: 'Werner Vogels',
+    url: 'https://www.allthingsdistributed.com/atom.xml',
+  },
+  {
+    // Martin Fowler — ThoughtWorks, software architecture, refactoring, AI in software
+    name: 'Martin Fowler',
+    url: 'https://martinfowler.com/feed.atom',
+  },
+  {
+    // Brendan Gregg — Linux perf, eBPF, flame graphs, GPU profiling
+    name: 'Brendan Gregg',
+    url: 'https://www.brendangregg.com/blog/rss.xml',
+  },
+  {
+    // Mitchell Hashimoto — HashiCorp founder, Ghostty, systems programming in Zig
+    name: 'Mitchell Hashimoto',
+    url: 'https://mitchellh.com/feed.xml',
+  },
+  {
+    name: 'Mitchell Hashimoto (GitHub)',
+    url: 'https://github.com/mitchellh.atom',
+  },
+  {
+    // Nelson Elhage — Anthropic, systems programming, debugging, AI tooling
+    name: 'Nelson Elhage',
+    url: 'https://blog.nelhage.com/index.xml',
+  },
+  {
+    // Tim Dettmers — quantization (QLoRA, bitsandbytes), efficient ML, GPU research
+    name: 'Tim Dettmers',
+    url: 'https://timdettmers.com/feed/',
+  },
+  // ── AI x Work & Society ───────────────────────────────────────
+  {
+    // Ethan Mollick — Wharton professor, AI x work/education, practical AI use
+    name: 'Ethan Mollick (One Useful Thing)',
+    url: 'https://www.oneusefulthing.org/feed',
+  },
+  // ── fast.ai ───────────────────────────────────────────────────
+  {
+    // Jeremy Howard — fast.ai, practical deep learning, Answer.AI
+    name: 'Jeremy Howard (fast.ai)',
+    url: 'https://www.fast.ai/index.xml',
+  },
+  // ── AI Critics & Broader Thinkers ─────────────────────────────
+  {
+    // Gary Marcus — AI skeptic, neuroscience, critique of deep learning hype
+    name: 'Gary Marcus',
+    url: 'https://garymarcus.substack.com/feed',
+  },
+  {
+    // Scott Alexander — rationalist, AI risk & policy analysis, Astral Codex Ten
+    name: 'Scott Alexander (Astral Codex Ten)',
+    url: 'https://astralcodexten.substack.com/feed',
+  },
+  {
+    // Jack Clark — Import AI, co-founded Anthropic, AI policy and research roundup
+    name: 'Jack Clark (Import AI)',
+    url: 'https://importai.substack.com/feed',
+  },
+  {
+    // Fei-Fei Li — ImageNet, spatial intelligence, AI + society
+    name: 'Fei-Fei Li',
+    url: 'https://drfeifei.substack.com/feed',
+  },
+  {
+    // Chris Olah — mechanistic interpretability, neural network circuits, Anthropic
+    name: 'Chris Olah',
+    url: 'https://colah.github.io/rss.xml',
+  },
+  // ── Research Labs & Academic Blogs ────────────────────────────
+  {
+    // Berkeley AI Research — top-tier ML/AI research from UC Berkeley
+    name: 'BAIR Blog',
+    url: 'https://bair.berkeley.edu/blog/feed.xml',
+  },
+  {
+    // Paul Graham — essays on startups, technology, and increasingly AI
+    name: 'Paul Graham',
+    url: 'https://www.paulgraham.com/rss.html',
+  },
+  // ── Anthropic & Labs ──────────────────────────────────────────
+  {
+    name: 'Boris Cherny (GitHub)',
+    url: 'https://github.com/bcherny.atom',
+  },
+  {
+    // Official releases, research, model updates
+    name: 'Anthropic News',
+    url: 'https://www.anthropic.com/rss.xml',
+  },
+  {
+    // Dario Amodei — Anthropic CEO, essays on AI safety and capabilities
+    name: 'Dario Amodei',
+    url: 'https://darioamodei.com/feed',
+  },
+  {
+    name: 'Hugging Face Blog',
+    url: 'https://huggingface.co/blog/feed.xml',
+  },
+  // ── AI Safety & Alignment Researchers ────────────────────────
+  {
+    // Yoshua Bengio — deep learning pioneer, AI safety advocate
+    name: 'Yoshua Bengio',
+    url: 'https://yoshuabengio.org/feed/',
+  },
+  {
+    // Gwern Branwen — long-form research essays on AI, scaling, forecasting
+    name: 'Gwern Branwen',
+    url: 'https://gwern.net/index.xml',
+  },
+  // ── Critical & Policy Perspectives ───────────────────────────
+  {
+    // Arvind Narayanan — AI Snake Oil, Princeton; critical analysis of AI hype
+    name: 'Arvind Narayanan (AI Snake Oil)',
+    url: 'https://aisnakeoil.substack.com/feed',
+  },
+  // ── OpenAI Leadership ─────────────────────────────────────────
+  {
+    // Sam Altman — OpenAI CEO; occasional essays on AI progress and strategy
+    name: 'Sam Altman',
+    url: 'https://blog.samaltman.com/posts.atom',
+  },
+];
+
+// Broader news sources for coverage of releases, launches, and industry context
+const RSS_FEEDS = [
+  ...PRACTITIONER_FEEDS,
+  {
+    name: 'Hacker News',
+    url: 'https://hnrss.org/frontpage?count=30',
+  },
+  {
+    name: 'Ars Technica',
+    url: 'https://feeds.arstechnica.com/arstechnica/index',
+  },
+  {
+    name: 'MIT Technology Review',
+    url: 'https://www.technologyreview.com/feed/',
+  },
+  {
+    name: 'The Verge AI',
+    url: 'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml',
+  },
+  {
+    name: 'Wired AI',
+    url: 'https://www.wired.com/feed/tag/artificial-intelligence/latest/rss',
+  },
+  {
+    name: 'InfoQ AI',
+    url: 'https://feed.infoq.com/machine-learning',
+  },
+  {
+    name: 'Google AI Blog',
+    url: 'https://blog.google/technology/ai/rss/',
+  },
+  {
+    name: 'TechCrunch AI',
+    url: 'https://techcrunch.com/category/artificial-intelligence/feed/',
+  },
+  {
+    name: 'VentureBeat AI',
+    url: 'https://venturebeat.com/category/ai/feed/',
+  },
+  // ── AI Research Publications ───────────────────────────────────
+  {
+    name: 'OpenAI Blog',
+    url: 'https://openai.com/news/rss.xml',
+  },
+  {
+    // The Batch — DeepLearning.AI weekly AI news digest by Andrew Ng
+    name: 'The Batch (DeepLearning.AI)',
+    url: 'https://www.deeplearning.ai/the-batch/feed/',
+  },
+  {
+    // The Gradient — in-depth perspectives on ML research and AI
+    name: 'The Gradient',
+    url: 'https://thegradient.pub/rss/',
+  },
+  {
+    name: 'LangChain Blog',
+    url: 'https://blog.langchain.dev/rss/',
+  },
+  {
+    // Curated top posts on AI, alignment, rationality
+    name: 'LessWrong (Curated)',
+    url: 'https://www.lesswrong.com/feed.xml?view=curated',
+  },
+  {
+    name: 'AI Alignment Forum',
+    url: 'https://www.alignmentforum.org/feed.xml',
+  },
+  {
+    name: 'Towards Data Science',
+    url: 'https://medium.com/feed/towards-data-science',
+  },
+  // ── Research Labs ─────────────────────────────────────────────
+  {
+    // Google DeepMind — Gemini, AlphaFold, and frontier research
+    name: 'Google DeepMind Blog',
+    url: 'https://deepmind.google/discover/blog/rss.xml',
+  },
+  {
+    // Meta AI — LLaMA, open model releases, research
+    name: 'Meta AI Blog',
+    url: 'https://ai.meta.com/blog/rss/',
+  },
+  {
+    // Microsoft Research — AI, systems, and applied ML research
+    name: 'Microsoft Research Blog',
+    url: 'https://www.microsoft.com/en-us/research/feed/',
+  },
+  {
+    // Stanford HAI — AI policy, ethics, and interdisciplinary research
+    name: 'Stanford HAI Blog',
+    url: 'https://hai.stanford.edu/news/rss.xml',
+  },
+  {
+    // NVIDIA — GPU computing, AI infrastructure, model releases
+    name: 'NVIDIA AI Blog',
+    url: 'https://blogs.nvidia.com/feed/',
+  },
+  {
+    // Amazon Science — AWS AI, Alexa, applied ML
+    name: 'Amazon Science Blog',
+    url: 'https://www.amazon.science/index.rss',
+  },
+  // ── Practitioner Resources ────────────────────────────────────
+  {
+    // Papers With Code — ML papers + code, trending research
+    name: 'Papers With Code',
+    url: 'https://paperswithcode.com/rss.xml',
+  },
+  {
+    // Last Week in AI — curated AI news digest
+    name: 'Last Week in AI',
+    url: 'https://lastweekin.ai/feed',
+  },
+];
+
+// ──────────────────────────────────────────────────────────────
+// RSS Fetching
+// ──────────────────────────────────────────────────────────────
+
+const feedParser = new Parser({
+  timeout: 12000,
+  headers: {
+    'User-Agent':
+      'AI-Daily-Flash/1.0 (https://github.com; newsletter bot)',
+    Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+  },
+  customFields: {
+    item: ['media:description', 'media:content', 'content:encoded'],
+  },
+});
+
+async function fetchFeed(feed) {
+  try {
+    const result = await feedParser.parseURL(feed.url);
+    return result.items.slice(0, 12).map((item) => ({
+      source: feed.name,
+      title: (item.title || '').trim(),
+      link: item.link || item.guid || '',
+      summary: (
+        item.contentSnippet ||
+        item.content ||
+        item['content:encoded'] ||
+        item.summary ||
+        ''
+      )
+        .replace(/<[^>]+>/g, '') // strip HTML tags
+        .trim()
+        .slice(0, 300),
+      date: item.pubDate ? new Date(item.pubDate) : new Date(0),
+    }));
+  } catch (err) {
+    console.warn(`  ⚠ Skipped "${feed.name}": ${err.message}`);
+    return [];
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+// Main
+// ──────────────────────────────────────────────────────────────
+
+async function main() {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error('ANTHROPIC_API_KEY environment variable is required');
+  }
+
+  const client = new Anthropic.default();
+  const now = new Date();
+  const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
+
+  // Denver is Mountain Time: UTC-7 (MDT) or UTC-6 (MST)
+  // The workflow fires at 07:00 UTC which is midnight MDT / 1am MST
+  console.log(`\n⚡ AI Daily Flash Generator — ${today}`);
+  console.log('━'.repeat(50));
+
+  // ── 1. Fetch all RSS feeds ──────────────────────────────────
+  console.log('\n📡 Fetching RSS feeds...');
+  const results = await Promise.allSettled(RSS_FEEDS.map((feed) => fetchFeed(feed)));
+  const allArticles = [];
+  results.forEach((result, i) => {
+    const feed = RSS_FEEDS[i];
+    const articles = result.status === 'fulfilled' ? result.value : [];
+    console.log(`  • ${feed.name}: ${articles.length} items`);
+    allArticles.push(...articles);
+  });
+  console.log(`\n  Total: ${allArticles.length} articles fetched`);
+
+  // ── 2a. Load previously covered URLs from last 7 issues ────
+  const dataDir = path.join(__dirname, '..', 'data', 'newsletters');
+  const seenUrls = new Set();
+  const recentIssues = []; // { date, title, headlines } for prompt context
+  for (let i = 1; i <= 7; i++) {
+    const pastDate = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const pastDateStr = pastDate.toISOString().split('T')[0];
+    const pastPath = path.join(dataDir, `${pastDateStr}.json`);
+    if (fs.existsSync(pastPath)) {
+      try {
+        const past = JSON.parse(fs.readFileSync(pastPath, 'utf-8'));
+        const headlines = [];
+        (past.sections || []).forEach((s) =>
+          (s.stories || []).forEach((story) => {
+            if (story.url) seenUrls.add(story.url);
+            if (story.headline) headlines.push(story.headline);
+          })
+        );
+        recentIssues.push({ date: pastDateStr, title: past.title, headlines });
+      } catch {
+        // skip malformed files
+      }
+    }
+  }
+  if (seenUrls.size > 0) {
+    console.log(
+      `  ℹ Loaded ${seenUrls.size} previously covered URLs from ${recentIssues.length} recent issue(s) — will skip duplicates`
+    );
+  }
+
+  // ── 2b. Filter & deduplicate ────────────────────────────────
+  const cutoff = new Date(now.getTime() - 48 * 60 * 60 * 1000); // 48h window
+
+  let filtered = allArticles.filter(
+    (a) => a.title.length > 10 && a.date >= cutoff
+  );
+
+  // Fall back to newest articles if not enough recent ones
+  if (filtered.length < 15) {
+    console.log(
+      '  ℹ Less than 15 recent articles — expanding to all fetched articles'
+    );
+    filtered = allArticles.filter((a) => a.title.length > 10);
+  }
+
+  // Sort by date descending
+  filtered.sort((a, b) => b.date - a.date);
+
+  // Deduplicate by normalized title prefix
+  const seen = new Set();
+  const unique = filtered.filter((article) => {
+    const key = article.title
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g, '')
+      .slice(0, 60);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // Filter out URLs already covered in recent issues
+  const deduped = unique.filter((a) => !a.link || !seenUrls.has(a.link));
+  const skipped = unique.length - deduped.length;
+  if (skipped > 0) {
+    console.log(`  ℹ Skipped ${skipped} article(s) already covered in a recent issue`);
+  }
+
+  // Take top 60 to stay within token limits (more feeds now)
+  const articles = deduped.slice(0, 60);
+  console.log(`  → ${articles.length} unique articles after filtering`);
+
+  // ── 3. Build prompt ─────────────────────────────────────────
+  // Label practitioner articles so Claude can weight them appropriately
+  const practitionerNames = new Set(PRACTITIONER_FEEDS.map((f) => f.name));
+
+  const articlesText = articles
+    .map(
+      (a, i) =>
+        `[${i + 1}] ${a.title}\n` +
+        `    Source: ${a.source}${practitionerNames.has(a.source) ? ' ⭐ PRACTITIONER' : ''}\n` +
+        `    URL: ${a.link}\n` +
+        `    Summary: ${a.summary || '(no summary available)'}`
+    )
+    .join('\n\n');
+
+  const formattedDate = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'America/Denver',
+  });
+
+  const prompt = `You are the editor of "AI Daily Flash", a concise daily newsletter for people who are actively building with AI — developers, researchers, and curious practitioners.
+
+The tone is smart and direct, like a knowledgeable friend who has already read everything so you don't have to. It is NOT a business news wire. We care about ideas, techniques, new capabilities, and what interesting people are actually doing and thinking — not funding rounds or corporate press releases.
+
+Today is ${formattedDate}.${
+    recentIssues.length > 0
+      ? `\n\nRecent issues already published — do NOT repeat these stories or cover the same topics:\n${recentIssues.map((i) => `- ${i.date}: ${i.title}\n${i.headlines.map((h) => `    • ${h}`).join('\n')}`).join('\n')}`
+      : ''
+  }
+
+Here are today's articles. Items marked ⭐ PRACTITIONER come from individual practitioners and researchers — prioritize these when they're present, as they represent first-hand insight from people in the field.
+
+Notable practitioners to prioritize: Andrej Karpathy, Simon Willison, Chip Huyen, Lilian Weng, Sebastian Raschka, Jay Alammar, Nathan Lambert, François Chollet, Eugene Yan, Hamel Husain, swyx/Latent Space, Vicki Boykis, Marc Brooker, Werner Vogels, Martin Fowler, Brendan Gregg, Mitchell Hashimoto, Nelson Elhage, Tim Dettmers, Ethan Mollick, Jeremy Howard, Gwern Branwen, Arvind Narayanan, Dario Amodei, Sam Altman, Yoshua Bengio.
+
+${articlesText}
+
+Write today's newsletter as a JSON object. Return ONLY valid JSON — no markdown, no code fences, no explanation. Use this exact schema:
+
+{
+  "title": "AI Daily Flash — [Month Day, Year]",
+  "subtitle": "What's actually happening in AI today",
+  "editorsNote": "2-3 tight sentences. State a concrete observation or fact from today's news, then say plainly what it means. No hype, no speculation, no rhetorical questions. Write like a senior engineer explaining something to a peer — direct, grounded, slightly opinionated.",
+  "sections": [
+    {
+      "title": "Section Name",
+      "stories": [
+        {
+          "headline": "Short, punchy headline (max 12 words)",
+          "summary": "2-3 sentences: what it is, what's interesting or novel about it, and what it means for people building with AI",
+          "source": "Source name from the article list",
+          "url": "exact URL from the article list",
+          "category": "one of: Models, Research, Tools, Open Source, Community, APIs, Agents, Evals"
+        }
+      ]
+    }
+  ]
+}
+
+Guidelines:
+- Create 3-5 sections. Suggested groupings: "Today's Big Idea", "Practitioner Perspectives", "New Models & Capabilities", "Tools & Open Source", "Research Worth Reading"
+- Each section: 2-4 stories. Total: 10-18 stories across the newsletter.
+- Be ruthless about significance. Every story must clear a high bar: is this genuinely new, technically interesting, or meaningfully changes how builders should think? If not, cut it.
+- Prioritize above all else: major model releases, significant open source drops, novel research with clear implications, and practitioner insights that reveal something non-obvious. These are the stories readers open the newsletter for.
+- Hard cap: no more than 2 stories from any single author or source, regardless of how prolific they are that day.
+- Prioritize ⭐ PRACTITIONER sources — if a practitioner posted something genuinely notable, it belongs near the top
+- Deprioritize: funding announcements, executive moves, partnership press releases, generic "AI is transforming X industry" takes
+- Skip entirely: trivial GitHub activity — minor PRs, blog maintenance commits, small personal site tweaks, routine dependency updates. GitHub feeds are only worth including if someone shipped a significant new tool, released a major library, or made a notable open source contribution
+- Write summaries in plain language. Lead with what's new or interesting, then explain why it matters to a builder
+- The editorsNote must be concrete and grounded. No "the pace of AI is accelerating", no "one thing is clear", no em-dashes for dramatic effect. Just a sharp, specific observation from today's news and what it means — written like a smart engineer, not a newsletter marketer.`;
+
+  // ── 4. Generate with Claude ─────────────────────────────────
+  console.log(`\n🤖 Generating newsletter with Claude...`);
+
+  let rawOutput = '';
+
+  const TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort(new Error(`Claude API timed out after ${TIMEOUT_MS / 60000} minutes`));
+  }, TIMEOUT_MS);
+
+  try {
+    const stream = await client.messages.stream(
+      {
+        model: 'claude-opus-4-6',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }],
+      },
+      { signal: controller.signal }
+    );
+
+    process.stdout.write('  ');
+    let dotCount = 0;
+    for await (const event of stream) {
+      if (
+        event.type === 'content_block_delta' &&
+        event.delta.type === 'text_delta'
+      ) {
+        rawOutput += event.delta.text;
+        // Show progress dots
+        if (rawOutput.length % 200 === 0) {
+          process.stdout.write('.');
+          dotCount++;
+          if (dotCount % 40 === 0) process.stdout.write('\n  ');
+        }
+      }
+    }
+  } finally {
+    clearTimeout(timeoutId);
+  }
+  console.log('\n  ✓ Generation complete');
+
+  // ── 5. Parse JSON ───────────────────────────────────────────
+  let newsletter;
+  try {
+    // Claude sometimes wraps in ```json ... ``` — strip if present
+    const cleaned = rawOutput
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+    newsletter = JSON.parse(cleaned);
+  } catch {
+    // Try extracting the first JSON object from the response
+    const match = rawOutput.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        newsletter = JSON.parse(match[0]);
+      } catch (e2) {
+        throw new Error(`Failed to parse Claude response as JSON: ${e2.message}\n\nRaw output (first 500 chars):\n${rawOutput.slice(0, 500)}`);
+      }
+    } else {
+      throw new Error(`No JSON found in Claude response.\n\nRaw output (first 500 chars):\n${rawOutput.slice(0, 500)}`);
+    }
+  }
+
+  // Attach metadata
+  newsletter.date = today;
+  newsletter.generatedAt = now.toISOString();
+
+  // Validate basic structure
+  if (!newsletter.sections || !Array.isArray(newsletter.sections)) {
+    throw new Error('Newsletter JSON is missing required "sections" array');
+  }
+
+  // ── 6. Save to disk ─────────────────────────────────────────
+  fs.mkdirSync(dataDir, { recursive: true });
+
+  // Save raw candidate articles for review (not shown on website)
+  const candidatesDir = path.join(__dirname, '..', 'data', 'candidates');
+  fs.mkdirSync(candidatesDir, { recursive: true });
+  const candidatesPath = path.join(candidatesDir, `${today}.json`);
+  fs.writeFileSync(
+    candidatesPath,
+    JSON.stringify({ date: today, generatedAt: now.toISOString(), total: articles.length, articles }, null, 2),
+    'utf-8'
+  );
+  console.log(`\n📋 Candidates saved: data/candidates/${today}.json (${articles.length} articles)`);
+
+  const outputPath = path.join(dataDir, `${today}.json`);
+  fs.writeFileSync(outputPath, JSON.stringify(newsletter, null, 2), 'utf-8');
+
+  const storyCount = newsletter.sections.reduce(
+    (sum, s) => sum + (s.stories?.length ?? 0),
+    0
+  );
+
+  console.log(`\n✅ Newsletter saved!`);
+  console.log(`   File:     data/newsletters/${today}.json`);
+  console.log(`   Sections: ${newsletter.sections.length}`);
+  console.log(`   Stories:  ${storyCount}`);
+  console.log(`   Title:    ${newsletter.title}`);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('\n❌ Generator failed:', err.message);
+    process.exit(1);
+  });

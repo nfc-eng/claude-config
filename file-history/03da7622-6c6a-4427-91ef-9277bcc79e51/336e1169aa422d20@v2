@@ -1,0 +1,145 @@
+import Link from 'next/link';
+import { Newsletter, formatDate } from '@/lib/newsletter';
+import { SectionBlock } from '@/components/SectionBlock';
+import AudioPlayer from '@/components/AudioPlayer';
+
+interface RecentIssue {
+  date: string;
+  title: string;
+}
+
+interface Props {
+  newsletter: Newsletter;
+  recentIssues: RecentIssue[];
+}
+
+export default function NewsletterView({ newsletter, recentIssues }: Props) {
+  const prevIssue = recentIssues[0] ?? null;
+
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      {/* Header — Vercel-style: no border, shadow-only separator */}
+      <header className="nav-shadow bg-zinc-950/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between" style={{ height: '52px' }}>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <span className="text-cyan-400 text-base">⚡</span>
+            <span className="font-mono font-semibold text-sm tracking-tight text-zinc-100 group-hover:text-cyan-400 transition-colors">
+              AI Daily Flash
+            </span>
+          </Link>
+          <nav className="flex items-center gap-5">
+            <Link
+              href="/archive"
+              className="text-xs font-mono text-zinc-500 hover:text-zinc-200 transition-colors"
+            >
+              Archive
+            </Link>
+            {prevIssue && (
+              <Link
+                href={`/${prevIssue.date}`}
+                className="text-xs font-mono text-zinc-500 hover:text-zinc-200 transition-colors hidden sm:block"
+              >
+                ← prev
+              </Link>
+            )}
+          </nav>
+        </div>
+      </header>
+
+      {/* Hero — with glow orb and scanline texture */}
+      <div className="relative hero-texture bg-gradient-to-b from-zinc-900 to-zinc-950 border-b border-zinc-800/40 overflow-hidden">
+        {/* Ambient glow orb */}
+        <div className="glow-orb top-0 left-1/4" />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-12">
+          <div className="max-w-3xl">
+            <p className="text-xs font-mono font-medium uppercase tracking-widest text-cyan-400/70 mb-3">
+              {formatDate(newsletter.date)}
+            </p>
+            <h1 className="font-display font-bold text-2xl sm:text-3xl text-zinc-100 mb-2 leading-tight tracking-tight">
+              {newsletter.title}
+            </h1>
+            <p className="text-zinc-500 text-sm font-mono mb-8">{newsletter.subtitle}</p>
+
+            {/* Editor's note */}
+            <div className="bg-cyan-500/5 border-l-2 border-cyan-400/50 rounded-r-xl p-4">
+              <p className="text-xs font-mono font-semibold uppercase tracking-widest text-cyan-400/70 mb-2">
+                Editor&rsquo;s Note
+              </p>
+              <p className="text-sm text-zinc-300 leading-relaxed">
+                {newsletter.editorsNote}
+              </p>
+            </div>
+
+            {/* Audio player */}
+            {newsletter.audioUrl && (
+              <AudioPlayer audioUrl={newsletter.audioUrl} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-10">
+        {newsletter.sections.map((section, i) => (
+          <div key={i}>
+            {i > 0 && <div className="section-divider mb-10" />}
+            <SectionBlock section={section} sectionIndex={i + 1} />
+          </div>
+        ))}
+      </main>
+
+      {/* Recent Issues */}
+      {recentIssues.length > 0 && (
+        <div className="border-t border-zinc-800/40 mt-4">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            <h2 className="text-xs font-mono font-semibold uppercase tracking-widest text-zinc-600 mb-4">
+              Recent Issues
+            </h2>
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+              {recentIssues.map((issue) => (
+                <Link
+                  key={issue.date}
+                  href={`/${issue.date}`}
+                  className="group flex items-center gap-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-lg px-4 py-2.5 transition-all"
+                >
+                  <span className="text-xs font-mono text-zinc-600 shrink-0">
+                    {issue.date}
+                  </span>
+                  <span className="text-xs text-zinc-400 group-hover:text-zinc-200 transition-colors truncate">
+                    {issue.title}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="border-t border-zinc-800/40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-zinc-600 text-xs font-mono">
+            <span className="text-cyan-400/50">⚡</span>
+            <span>AI Daily Flash</span>
+            <span className="text-zinc-800">·</span>
+            <span>
+              generated{' '}
+              {new Date(newsletter.generatedAt).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short',
+              })}
+            </span>
+          </div>
+          <Link
+            href="/archive"
+            className="text-xs font-mono text-zinc-500 hover:text-cyan-400 transition-colors"
+          >
+            all issues →
+          </Link>
+        </div>
+      </footer>
+    </div>
+  );
+}

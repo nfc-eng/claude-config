@@ -1,0 +1,4 @@
+- [User Profile — Nicholas Clement](./user_profile.md) — Sr. SDE at AWS, cloud architect, Denver CO, seeking remote SWE roles
+- [Resume Project 2026](./project_resume_2026.md) — Building tailored resumes for remote cloud SWE positions; base file at Desktop/Resume-2026/nicholas-clement-base.md
+- [Always push claude-config changes](./feedback_claude_config_push.md) — Any edits to ~/.claude/ must be committed and pushed to nfc-eng/claude-config in the same turn
+- [AI Daily Flash Project](./project_ai_daily_flash.md) — Daily AI newsletter + podcast pipeline, repo nfc-eng/AI-Daily-Flash, production branch mainline

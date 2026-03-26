@@ -1,0 +1,131 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+
+interface Props {
+  audioUrl: string;
+}
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+export default function AudioPlayer({ audioUrl }: Props) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const onTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const onDurationChange = () => setDuration(audio.duration);
+    const onEnded = () => setPlaying(false);
+    const onWaiting = () => setLoading(true);
+    const onCanPlay = () => setLoading(false);
+
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('durationchange', onDurationChange);
+    audio.addEventListener('ended', onEnded);
+    audio.addEventListener('waiting', onWaiting);
+    audio.addEventListener('canplay', onCanPlay);
+
+    return () => {
+      audio.removeEventListener('timeupdate', onTimeUpdate);
+      audio.removeEventListener('durationchange', onDurationChange);
+      audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('waiting', onWaiting);
+      audio.removeEventListener('canplay', onCanPlay);
+    };
+  }, []);
+
+  const togglePlay = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+    } else {
+      setLoading(true);
+      await audio.play();
+      setPlaying(true);
+      setLoading(false);
+    }
+  };
+
+  const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const t = Number(e.target.value);
+    audio.currentTime = t;
+    setCurrentTime(t);
+  };
+
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 mt-6">
+      <audio ref={audioRef} src={audioUrl} preload="metadata" />
+
+      {/* Play/Pause button */}
+      <button
+        onClick={togglePlay}
+        className="shrink-0 w-9 h-9 rounded-full bg-cyan-500 hover:bg-cyan-400 transition-colors flex items-center justify-center"
+        aria-label={playing ? 'Pause' : 'Play'}
+      >
+        {loading ? (
+          <svg className="w-4 h-4 text-zinc-900 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+        ) : playing ? (
+          <svg className="w-4 h-4 text-zinc-900" fill="currentColor" viewBox="0 0 24 24">
+            <rect x="6" y="4" width="4" height="16" rx="1" />
+            <rect x="14" y="4" width="4" height="16" rx="1" />
+          </svg>
+        ) : (
+          <svg className="w-4 h-4 text-zinc-900 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        )}
+      </button>
+
+      {/* Label */}
+      <div className="shrink-0">
+        <p className="text-xs font-mono font-semibold text-zinc-300 leading-none">Listen</p>
+        <p className="text-xs font-mono text-zinc-600 mt-0.5">~10 min · AI Daily Flash</p>
+      </div>
+
+      {/* Scrubber */}
+      <div className="flex-1 flex items-center gap-2 min-w-0">
+        <span className="text-xs font-mono text-zinc-600 shrink-0 w-9 text-right">
+          {formatTime(currentTime)}
+        </span>
+        <div className="relative flex-1 h-1.5 bg-zinc-800 rounded-full">
+          <div
+            className="absolute inset-y-0 left-0 bg-cyan-500 rounded-full pointer-events-none"
+            style={{ width: `${progress}%` }}
+          />
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step={0.1}
+            value={currentTime}
+            onChange={seek}
+            className="absolute inset-0 w-full opacity-0 cursor-pointer h-full"
+            aria-label="Seek"
+          />
+        </div>
+        <span className="text-xs font-mono text-zinc-600 shrink-0 w-9">
+          {duration ? formatTime(duration) : '--:--'}
+        </span>
+      </div>
+    </div>
+  );
+}
